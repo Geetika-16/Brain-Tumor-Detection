@@ -191,6 +191,7 @@ To improve transparency and trust in AI predictions, Grad-CAM visualizations hig
 1. Main.py - Main code of the program where integrates all the steps together and sent to flask.
 2. app.py - Backend flask code to integrate the web templates and project flow together.
 3. Templates - Web designing Files
+4. Brain Tumor Folder - Output Screenshots.
 
 ---
 
