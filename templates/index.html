@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeuroVision AI – MRI Analysis</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --blue-deep:   #0a2c6e;
+    --blue-mid:    #1a4db8;
+    --blue-light:  #3b82f6;
+    --blue-pale:   #eff6ff;
+    --blue-pale2:  #dbeafe;
+    --teal:        #0891b2;
+    --green:       #10b981;
+    --orange:      #f59e0b;
+    --red:         #ef4444;
+    --white:       #ffffff;
+    --off-white:   #f8faff;
+    --text-dark:   #0f172a;
+    --text-mid:    #334155;
+    --text-soft:   #64748b;
+    --border:      #e2eaf7;
+    --shadow-sm:   0 2px 12px rgba(10,44,110,0.07);
+    --shadow-md:   0 8px 32px rgba(10,44,110,0.12);
+    --shadow-lg:   0 20px 56px rgba(10,44,110,0.16);
+    --radius:      16px;
+    --radius-lg:   20px;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+    font-family: 'DM Sans', sans-serif;
+    background:
+        radial-gradient(circle at 8% 12%, rgba(26,77,184,0.07) 0%, transparent 38%),
+        radial-gradient(circle at 92% 88%, rgba(8,145,178,0.06) 0%, transparent 36%),
+        linear-gradient(180deg, #f8faff 0%, #eef3fc 100%);
+    color: var(--text-dark);
+    min-height: 100vh;
+}
+
+/* ── PAGE SHELL ── */
+.page-shell {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 28px 24px 56px;
+}
+
+/* ══ SITE HEADER ══ */
+.site-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 16px 26px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow-sm);
+}
+
+.header-brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.header-logo {
+    width: 44px; height: 44px;
+    border-radius: 11px;
+    background: var(--blue-deep);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+.header-logo svg { width: 24px; height: 24px; fill: white; }
+
+.brand-name {
+    display: block;
+    font-family: 'Playfair Display', serif;
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--blue-deep);
+    letter-spacing: -0.3px;
+    line-height: 1.2;
+}
+.brand-sub {
+    display: block;
+    font-size: .74rem;
+    font-weight: 500;
+    color: var(--text-soft);
+    letter-spacing: .5px;
+}
+
+.back-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--blue-pale);
+    color: var(--blue-mid);
+    border: 1px solid var(--blue-pale2);
+    padding: 9px 18px;
+    border-radius: 10px;
+    font-size: .86rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background .2s, transform .15s;
+    cursor: pointer;
+}
+.back-btn svg { width: 16px; height: 16px; fill: currentColor; }
+.back-btn:hover { background: var(--blue-pale2); transform: translateX(-2px); }
+
+/* ══ HERO ══ */
+.hero {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 22px;
+    margin-bottom: 24px;
+    align-items: stretch;
+}
+
+.hero-copy {
+    background: linear-gradient(135deg, var(--blue-deep) 0%, var(--blue-mid) 55%, var(--teal) 100%);
+    border-radius: var(--radius-lg);
+    padding: 40px 38px;
+    position: relative;
+    overflow: hidden;
+}
+.hero-copy::before {
+    content: '';
+    position: absolute; top: -80px; right: -80px;
+    width: 300px; height: 300px; border-radius: 50%;
+    background: rgba(255,255,255,0.05);
+    pointer-events: none;
+}
+
+.hero-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: .78rem;
+    font-weight: 700;
+    color: #93c5fd;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 18px;
+}
+
+.live-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #34d399;
+    animation: blink 1.6s ease-in-out infinite;
+    flex-shrink: 0;
+}
+@keyframes blink {
+    0%,100% { opacity: 1; transform: scale(1); }
+    50%      { opacity: .4; transform: scale(1.4); }
+}
+
+.hero-copy h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 3.5vw, 3.2rem);
+    font-weight: 800;
+    color: white;
+    line-height: 1.12;
+    margin-bottom: 18px;
+    letter-spacing: -1px;
+}
+.hero-copy h1 em {
+    font-style: normal;
+    color: #93c5fd;
+}
+
+.hero-text {
+    font-size: .96rem;
+    color: rgba(255,255,255,.72);
+    line-height: 1.78;
+    max-width: 520px;
+    font-weight: 300;
+}
+
+/* badge cards */
+.hero-badges {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+.badge-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 18px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    box-shadow: var(--shadow-sm);
+    transition: transform .2s, box-shadow .2s;
+}
+.badge-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+
+.badge-icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem; font-weight: 800; color: white;
+}
+.yolo-icon { background: linear-gradient(135deg, #1a4db8, #3b82f6); }
+.cnn-icon  { background: linear-gradient(135deg, #0891b2, #06b6d4); }
+.grad-icon { background: linear-gradient(135deg, #7c3aed, #a78bfa); }
+.rad-icon  { background: linear-gradient(135deg, #059669, #34d399); }
+
+.badge-label {
+    font-size: .9rem;
+    font-weight: 700;
+    color: var(--blue-deep);
+    line-height: 1;
+}
+.badge-sub {
+    font-size: .74rem;
+    color: var(--text-soft);
+}
+
+/* ══ DASHBOARD ══ */
+.dashboard {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 22px;
+    margin-bottom: 22px;
+}
+
+/* ── PANEL BASE ── */
+.panel {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 26px;
+    box-shadow: var(--shadow-sm);
+}
+
+.panel-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 22px;
+}
+
+.panel-header-icon {
+    width: 42px; height: 42px;
+    border-radius: 11px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+.panel-header-icon svg { width: 20px; height: 20px; fill: white; }
+
+.upload-hicon  { background: linear-gradient(135deg, #1a4db8, #3b82f6); }
+.preview-hicon { background: linear-gradient(135deg, #0891b2, #06b6d4); }
+.summary-hicon { background: linear-gradient(135deg, #0a2c6e, #1a4db8); }
+.features-hicon{ background: linear-gradient(135deg, #059669, #34d399); }
+.explain-hicon { background: linear-gradient(135deg, #7c3aed, #a78bfa); }
+
+.panel-header h2 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--blue-deep);
+    margin-bottom: 3px;
+}
+.panel-subtitle {
+    font-size: .78rem;
+    color: var(--text-soft);
+    margin: 0;
+}
+
+/* ── UPLOAD PANEL ── */
+.upload-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.upload-box {
+    display: block;
+    position: relative;
+    border: 2px dashed #bfdbfe;
+    border-radius: var(--radius);
+    background: linear-gradient(135deg, #f0f7ff, #e8f2ff);
+    cursor: pointer;
+    transition: border-color .2s, background .2s, transform .15s;
+    overflow: hidden;
+}
+.upload-box input {
+    position: absolute; inset: 0; opacity: 0; cursor: pointer; z-index: 2;
+}
+.upload-box:hover, .upload-box.drag-over {
+    border-color: var(--blue-mid);
+    background: linear-gradient(135deg, #dbeafe, #e0f2fe);
+    transform: scale(1.01);
+}
+.upload-box.file-selected {
+    border-color: var(--green);
+    background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+    border-style: solid;
+}
+
+.upload-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 24px;
+    gap: 8px;
+    pointer-events: none;
+}
+
+.upload-cloud {
+    width: 48px; height: 48px; border-radius: 12px;
+    background: var(--blue-pale2);
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 6px;
+}
+.upload-cloud svg { width: 26px; height: 26px; fill: var(--blue-mid); }
+
+.upload-title {
+    font-size: .95rem;
+    font-weight: 700;
+    color: var(--blue-deep);
+    text-align: center;
+}
+.upload-caption {
+    font-size: .8rem;
+    color: var(--text-soft);
+    text-align: center;
+}
+.upload-formats {
+    font-size: .72rem;
+    font-weight: 700;
+    color: var(--blue-light);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-top: 4px;
+}
+
+.primary-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    border: none;
+    border-radius: 12px;
+    padding: 14px 20px;
+    background: linear-gradient(135deg, var(--blue-mid), var(--blue-deep));
+    color: white;
+    font-family: 'DM Sans', sans-serif;
+    font-size: .96rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform .2s, box-shadow .2s;
+    letter-spacing: .3px;
+}
+.primary-btn svg { width: 18px; height: 18px; fill: white; }
+.primary-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba(10,44,110,.28);
+}
+.primary-btn:active { transform: translateY(0); }
+
+/* ── MESSAGES ── */
+.message.error {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 14px;
+    padding: 13px 16px;
+    border-radius: 12px;
+    background: #fef2f2;
+    color: var(--red);
+    font-weight: 600;
+    font-size: .86rem;
+    border: 1px solid #fecaca;
+}
+.message.error svg { width: 18px; height: 18px; fill: var(--red); flex-shrink: 0; }
+
+/* ── PREVIEW PANEL ── */
+.preview-wrap { position: relative; }
+.preview-image {
+    width: 100%;
+    border-radius: 14px;
+    object-fit: cover;
+    border: 1px solid var(--border);
+    display: block;
+    max-height: 340px;
+}
+.preview-overlay-badge {
+    position: absolute;
+    top: 12px; left: 12px;
+    background: rgba(255,255,255,.92);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 5px 12px;
+    font-size: .75rem;
+    font-weight: 700;
+    color: var(--blue-deep);
+    display: flex; align-items: center; gap: 6px;
+}
+.green-dot {
+    width: 7px; height: 7px; border-radius: 50%; background: var(--green);
+}
+
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 240px;
+    border-radius: 14px;
+    background: var(--off-white);
+    border: 1.5px dashed var(--border);
+    gap: 10px;
+    padding: 24px;
+}
+.empty-state svg { width: 36px; height: 36px; fill: #cbd5e1; }
+.empty-state p { font-size: .9rem; font-weight: 600; color: var(--text-soft); margin: 0; }
+.empty-state span { font-size: .78rem; color: #94a3b8; text-align: center; }
+.small-empty { min-height: 120px; }
+
+/* ══ RESULTS GRID ══ */
+.results-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+    margin-bottom: 22px;
+}
+
+.stat-card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    position: relative;
+    overflow: hidden;
+    transition: transform .2s, box-shadow .2s;
+}
+.stat-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+.stat-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--blue-mid), var(--teal));
+}
+
+.stat-icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+}
+.stat-icon svg { width: 20px; height: 20px; fill: white; }
+
+.tumor-icon  { background: linear-gradient(135deg, #0a2c6e, #1a4db8); }
+.uncert-icon { background: linear-gradient(135deg, #d97706, #f59e0b); }
+.agree-icon  { background: linear-gradient(135deg, #059669, #10b981); }
+.loc-icon    { background: linear-gradient(135deg, #0891b2, #06b6d4); }
+
+.stat-card h3 {
+    font-size: .78rem;
+    font-weight: 700;
+    color: var(--text-soft);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 0;
+}
+.big-value {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--blue-deep);
+    margin: 0;
+    word-break: break-word;
+    line-height: 1.3;
+}
+
+/* ══ REPORT LAYOUT ══ */
+.report-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 22px;
+    margin-bottom: 22px;
+}
+
+.report-panel .panel-header { margin-bottom: 18px; }
+
+.report-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.report-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+}
+.report-row:last-child { border-bottom: none; }
+
+.report-row span {
+    font-size: .83rem;
+    color: var(--text-soft);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.report-row strong {
+    font-size: .85rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    text-align: right;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.val-tag {
+    display: inline-block;
+    background: var(--blue-pale);
+    color: var(--blue-mid);
+    border: 1px solid var(--blue-pale2);
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: .78rem;
+    font-weight: 700;
+}
+
+/* confidence mini-bar */
+.conf-bar-wrap {
+    display: inline-block;
+    width: 60px; height: 5px;
+    background: var(--border);
+    border-radius: 5px;
+    overflow: hidden;
+    vertical-align: middle;
+}
+.conf-bar {
+    display: block;
+    height: 100%;
+    background: linear-gradient(90deg, var(--blue-mid), var(--teal));
+    border-radius: 5px;
+    transition: width .6s ease;
+}
+
+.reason-row strong {
+    max-width: 60%;
+    font-size: .8rem;
+    line-height: 1.5;
+    text-align: right;
+}
+
+/* ══ AI EXPLANATION ══ */
+.explanation-panel { margin-bottom: 10px; }
+.explanation-text {
+    font-size: .93rem;
+    line-height: 1.85;
+    color: var(--text-mid);
+    margin-top: 4px;
+    padding: 20px;
+    background: var(--blue-pale);
+    border-radius: 12px;
+    border: 1px solid var(--blue-pale2);
+}
+
+/* ══ PATIENT INFO CARD ══ */
+.patient-info-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 26px;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.patient-info-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    position: relative;
+}
+
+.patient-info-avatar {
+    width: 54px; height: 54px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, var(--blue-mid), var(--teal));
+    color: white;
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem; font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    letter-spacing: -1px;
+}
+
+.patient-info-name {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--blue-deep);
+    line-height: 1.2;
+    margin-bottom: 5px;
+}
+
+.patient-info-id {
+    display: inline-block;
+    background: var(--blue-pale);
+    color: var(--blue-mid);
+    border: 1px solid var(--blue-pale2);
+    border-radius: 20px;
+    padding: 2px 10px;
+    font-size: .72rem;
+    font-weight: 700;
+}
+
+.patient-status-dot {
+    position: absolute; top: 0; right: 0;
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--green);
+    border: 2px solid white;
+    box-shadow: 0 0 0 2px rgba(16,185,129,.25);
+}
+
+.patient-info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.patient-info-item {
+    background: var(--off-white);
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    padding: 12px 14px;
+}
+
+.pi-label {
+    display: block;
+    font-size: .7rem;
+    font-weight: 700;
+    color: var(--text-soft);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 5px;
+}
+
+.pi-val {
+    font-size: .92rem;
+    font-weight: 700;
+    color: var(--blue-deep);
+}
+
+.patient-info-footer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: .75rem;
+    color: var(--text-soft);
+    border-top: 1px solid var(--border);
+    padding-top: 14px;
+    margin-top: -6px;
+}
+.patient-info-footer svg { width: 14px; height: 14px; fill: var(--blue-light); flex-shrink: 0; }
+
+/* ══ AI VISUAL OUTPUTS (Grad-CAM / Cropped) ══ */
+.ai-images-section {
+    margin-top: 22px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+}
+
+.ai-images-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: .8rem;
+    font-weight: 700;
+    color: var(--blue-deep);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 14px;
+}
+.ai-images-label svg { width: 16px; height: 16px; fill: var(--blue-mid); }
+
+.ai-images-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 12px;
+}
+
+.ai-img-card {
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    background: var(--off-white);
+    box-shadow: var(--shadow-sm);
+    transition: transform .2s, box-shadow .2s;
+}
+.ai-img-card:hover { transform: scale(1.03); box-shadow: var(--shadow-md); }
+
+.ai-img-card img {
+    width: 100%;
+    display: block;
+    object-fit: cover;
+    max-height: 130px;
+}
+
+.ai-img-card span {
+    display: block;
+    font-size: .7rem;
+    font-weight: 600;
+    color: var(--text-soft);
+    text-align: center;
+    padding: 7px 8px;
+    background: white;
+    border-top: 1px solid var(--border);
+}
+
+.analysis-visual-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+.analysis-visual-card {
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--off-white);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+}
+
+.analysis-visual-card img {
+    width: 100%;
+    height: 190px;
+    object-fit: cover;
+    display: block;
+    background: #000;
+}
+
+.analysis-visual-card.small img {
+    height: 145px;
+}
+
+.analysis-visual-card span {
+    display: block;
+    padding: 8px 10px;
+    background: white;
+    border-top: 1px solid var(--border);
+    font-size: .74rem;
+    font-weight: 700;
+    color: var(--text-soft);
+    text-align: center;
+}
+
+/* ══ RESPONSIVE ══ */
+@media (max-width: 1000px) {
+    .hero               { grid-template-columns: 1fr; }
+    .hero-badges        { grid-template-columns: repeat(4, 1fr); }
+    .dashboard          { grid-template-columns: 1fr; }
+    .results-grid       { grid-template-columns: repeat(2, 1fr); }
+    .report-layout      { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 600px) {
+    .page-shell         { padding: 16px 14px 40px; }
+    .site-header        { flex-direction: column; gap: 14px; align-items: flex-start; }
+    .hero-badges        { grid-template-columns: 1fr 1fr; }
+    .results-grid       { grid-template-columns: 1fr 1fr; }
+    .hero-copy          { padding: 28px 22px; }
+    .back-btn           { align-self: flex-start; }
+}
+</style>
+</head>
+<body>
+
+<div class="page-shell">
+
+    <!-- HEADER -->
+    <header class="site-header">
+        <div class="header-brand">
+            <div class="header-logo">
+                <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
+            </div>
+            <div>
+                <span class="brand-name">NeuroCare AI</span>
+                <span class="brand-sub">NeuroVision Predict Engine</span>
+            </div>
+        </div>
+
+        <a href="javascript:void(0)" class="back-btn" onclick="returnToDashboard()">
+            <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+            Return to Dashboard
+        </a>
+    </header>
+
+    <!-- HERO -->
+    <section class="hero">
+        <div class="hero-copy">
+            <div class="hero-eyebrow">
+                <span class="live-dot"></span>
+                AI-Based Brain Tumor Detection &amp; Clinical Support
+            </div>
+            <h1>NeuroVision <em>AI</em></h1>
+            <p class="hero-text">
+                Patient MRI scan is loaded directly from the database. Run AI analysis to detect tumor location,
+                classify tumor type, generate Grad-CAM visualizations, and produce a structured report.
+            </p>
+        </div>
+
+        <!-- Patient info card from Flask/database -->
+        <div class="patient-info-card" id="patientInfoCard">
+            <div class="patient-info-header">
+                <div class="patient-info-avatar" id="patientAvatar">
+                    {{ patient.patient_name[:1] if patient else '?' }}
+                </div>
+                <div>
+                    <div class="patient-info-name" id="patientName">
+                        {{ patient.patient_name if patient else 'No Patient Selected' }}
+                    </div>
+                    <div class="patient-info-id" id="patientIdBadge">
+                        {{ patient.patient_code if patient else '—' }}
+                    </div>
+                </div>
+                <span class="patient-status-dot"></span>
+            </div>
+
+            <div class="patient-info-grid">
+                <div class="patient-info-item">
+                    <span class="pi-label">Age</span>
+                    <strong class="pi-val" id="patientAge">{{ patient.age if patient else '—' }}</strong>
+                </div>
+                <div class="patient-info-item">
+                    <span class="pi-label">Gender</span>
+                    <strong class="pi-val" id="patientGender">{{ patient.gender if patient else '—' }}</strong>
+                </div>
+                <div class="patient-info-item">
+                    <span class="pi-label">Admitted</span>
+                    <strong class="pi-val" id="patientAdmit">{{ patient.admission_date if patient else '—' }}</strong>
+                </div>
+                <div class="patient-info-item">
+                    <span class="pi-label">Contact</span>
+                    <strong class="pi-val" id="patientContact">{{ patient.phone_no if patient else '—' }}</strong>
+                </div>
+            </div>
+
+            <div class="patient-info-footer">
+                <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
+                NeuroCare AI · MRI Report Review
+            </div>
+        </div>
+    </section>
+
+    <!-- MRI + PREVIEW -->
+    <main class="dashboard">
+
+        <!-- Database MRI Panel -->
+        <section class="panel upload-panel">
+            <div class="panel-header">
+                <div class="panel-header-icon upload-hicon">
+                    <svg viewBox="0 0 24 24"><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>
+                </div>
+                <div>
+                    <h2>Patient MRI Scan</h2>
+                    <p class="panel-subtitle">MRI loaded from patient database</p>
+                </div>
+            </div>
+
+            <form method="POST" class="upload-form">
+                {% if patient_mri_url %}
+                <div class="preview-wrap">
+                    <img src="{{ patient_mri_url }}" alt="Patient MRI Scan" class="preview-image">
+                    <div class="preview-overlay-badge">
+                        <span class="green-dot"></span> Database MRI
+                    </div>
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+                    <p>No MRI image found for this patient.</p>
+                    <span>Check the mri_image path in the database.</span>
+                </div>
+                {% endif %}
+
+                <button type="submit" class="primary-btn" {% if not patient_mri_url %}disabled{% endif %}>
+                    <svg viewBox="0 0 24 24"><path d="M9 11.75A1.25 1.25 0 1 0 9 14.25 1.25 1.25 0 0 0 9 11.75ZM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
+                    Run AI Analysis
+                </button>
+            </form>
+
+            {% if error %}
+            <div class="message error">
+                <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+                {{ error }}
+            </div>
+            {% endif %}
+
+            {% if result and result.gradcam_files %}
+            <div class="ai-images-section">
+                <div class="ai-images-label">
+                    <svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+                    AI Visual Outputs
+                </div>
+                <div class="ai-images-grid">
+                    {% if result.gradcam_files.gradcam %}
+                    <div class="ai-img-card">
+                        <img src="{{ result.gradcam_files.gradcam }}" alt="Grad-CAM Heatmap">
+                        <span>Grad-CAM Heatmap</span>
+                    </div>
+                    {% endif %}
+                    {% if result.gradcam_files.cropped %}
+                    <div class="ai-img-card">
+                        <img src="{{ result.gradcam_files.cropped }}" alt="Cropped Tumor">
+                        <span>Cropped Tumor Region</span>
+                    </div>
+                    {% endif %}
+                    {% if result.gradcam_files.overlay %}
+                    <div class="ai-img-card">
+                        <img src="{{ result.gradcam_files.overlay }}" alt="CAM Overlay">
+                        <span>CAM Overlay</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </section>
+
+        <!-- Preview Panel -->
+        <section class="panel preview-panel">
+            <div class="panel-header">
+                <div class="panel-header-icon preview-hicon">
+                    <svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+                </div>
+                <div>
+                    <h2>Analysis Preview</h2>
+                    <p class="panel-subtitle">
+                        {% if result and result.gradcam_files and result.gradcam_files.bbox %}
+                            MRI with detected bounding box
+                        {% else %}
+                            Original MRI preview before analysis
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+
+            {% if result and result.gradcam_files %}
+<div class="analysis-visual-grid">
+
+    {% if result.gradcam_files.bbox %}
+    <div class="analysis-visual-card">
+        <img src="{{ result.gradcam_files.bbox }}" alt="Bounding Box Detection">
+        <span>Bounding Box Detection</span>
+    </div>
+    {% endif %}
+
+    {% if result.gradcam_files.gradcam %}
+    <div class="analysis-visual-card">
+        <img src="{{ result.gradcam_files.gradcam }}" alt="Full MRI Heatmap">
+        <span>Full MRI Heatmap</span>
+    </div>
+    {% endif %}
+
+    {% if result.gradcam_files.overlay %}
+    <div class="analysis-visual-card">
+        <img src="{{ result.gradcam_files.overlay }}" alt="Full MRI Grad-CAM Overlay">
+        <span>Full MRI Grad-CAM Overlay</span>
+    </div>
+    {% endif %}
+
+    {% if result.gradcam_files.cropped %}
+    <div class="analysis-visual-card small">
+        <img src="{{ result.gradcam_files.cropped }}" alt="Cropped Tumor">
+        <span>Cropped Tumor</span>
+    </div>
+    {% endif %}
+
+    {% if result.gradcam_files.cropped_gradcam %}
+    <div class="analysis-visual-card small">
+        <img src="{{ result.gradcam_files.cropped_gradcam }}" alt="Cropped Heatmap">
+        <span>Cropped Heatmap</span>
+    </div>
+    {% endif %}
+
+    {% if result.gradcam_files.cropped_overlay %}
+    <div class="analysis-visual-card small">
+        <img src="{{ result.gradcam_files.cropped_overlay }}" alt="Cropped Grad-CAM Overlay">
+        <span>Cropped Grad-CAM Overlay</span>
+    </div>
+    {% endif %}
+
+</div>
+
+{% elif patient_mri_url %}
+<div class="preview-wrap">
+    <img src="{{ patient_mri_url }}" alt="Original Patient MRI" class="preview-image">
+    <div class="preview-overlay-badge">
+        <span class="green-dot"></span> Original MRI
+    </div>
+</div>
+
+{% else %}
+<div class="empty-state">
+    <p>No MRI available.</p>
+    <span>Return to the doctor dashboard and select a patient.</span>
+</div>
+{% endif %}
+
+</section>
+    </main>
+
+    {% if result %}
+    <!-- RESULTS -->
+    <section class="results-grid">
+        <article class="panel stat-card">
+            <div class="stat-icon tumor-icon">
+                <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+            </div>
+            <h3>Final Tumor Type</h3>
+            <p class="big-value" id="tumorTypeResult">{{ result.tumor_type }}</p>
+        </article>
+
+        <article class="panel stat-card">
+            <div class="stat-icon uncert-icon">
+                <svg viewBox="0 0 24 24"><path d="M11.5 2C6.81 2 3 5.81 3 10.5S6.81 19 11.5 19h.5v3c4.86-2.34 8-7 8-11.5C20 5.81 16.19 2 11.5 2zm1 14.5h-2v-2h2v2zm0-4h-2c0-3.25 3-3 3-5 0-1.1-.9-2-2-2s-2 .9-2 2h-2c0-2.21 1.79-4 4-4s4 1.79 4 4c0 2.5-3 2.75-3 5z"/></svg>
+            </div>
+            <h3>Uncertainty</h3>
+            <p class="big-value">{{ result.uncertainty }}</p>
+        </article>
+
+        <article class="panel stat-card">
+            <div class="stat-icon agree-icon">
+                <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+            </div>
+            <h3>Agreement</h3>
+            <p class="big-value">{{ result.agreement_status }}</p>
+        </article>
+
+        <article class="panel stat-card">
+            <div class="stat-icon loc-icon">
+                <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+            </div>
+            <h3>Location</h3>
+            <p class="big-value">{{ result.features.location if result.features else 'N/A' }}</p>
+        </article>
+    </section>
+
+    <section class="report-layout">
+        <article class="panel report-panel">
+            <div class="panel-header">
+                <div class="panel-header-icon summary-hicon">
+                    <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14H7v-2h5v2zm5-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+                </div>
+                <div>
+                    <h2>Prediction Summary</h2>
+                    <p class="panel-subtitle">YOLO + CNN ensemble result</p>
+                </div>
+            </div>
+
+            <div class="report-list">
+                <div class="report-row"><span>YOLO Prediction</span><strong class="val-tag">{{ result.yolo_prediction }}</strong></div>
+                <div class="report-row">
+                    <span>YOLO Confidence</span>
+                    <strong>
+                        {% if result.yolo_confidence %}
+                        {% set yolo_width = (result.yolo_confidence|float * 100)|int %}
+                        <div class="conf-bar-wrap">
+                            <div class="conf-bar" data-width="{{ yolo_width }}"></div>
+                        </div>
+                        {{ "%.2f"|format(result.yolo_confidence|float) }}
+                        {% else %}
+                        N/A
+                        {% endif %}
+                    </strong>
+                </div>
+                <div class="report-row"><span>CNN Prediction</span><strong class="val-tag">{{ result.cnn_prediction }}</strong></div>
+                <div class="report-row">
+                    <span>CNN Confidence</span>
+                    <strong>
+                        {% if result.cnn_confidence %}
+                        {% set cnn_width = (result.cnn_confidence|float * 100)|int %}
+                        <div class="conf-bar-wrap">
+                            <div class="conf-bar" data-width="{{ cnn_width }}"></div>
+                        </div>
+                        {{ "%.2f"|format(result.cnn_confidence|float) }}
+                        {% else %}
+                        N/A
+                        {% endif %}
+                    </strong>
+                </div>
+
+                <div class="report-row reason-row"><span>Reason</span><strong>{{ result.reason }}</strong></div>
+            </div>
+        </article>
+
+        <article class="panel report-panel">
+            <div class="panel-header">
+                <div class="panel-header-icon features-hicon">
+                    <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+                </div>
+                <div>
+                    <h2>Clinical Features</h2>
+                    <p class="panel-subtitle">Radiomics &amp; morphology</p>
+                </div>
+            </div>
+
+            {% if result.features %}
+            <div class="report-list">
+                <div class="report-row"><span>Mean Intensity</span><strong>{{ result.features.mean_intensity }}</strong></div>
+                <div class="report-row"><span>Std Intensity</span><strong>{{ result.features.std_intensity }}</strong></div>
+                <div class="report-row"><span>Texture Contrast</span><strong>{{ result.features.texture_contrast }}</strong></div>
+                <div class="report-row"><span>Texture Energy</span><strong>{{ result.features.texture_energy }}</strong></div>
+                <div class="report-row"><span>Circularity</span><strong>{{ result.features.circularity }}</strong></div>
+                <div class="report-row"><span>Area</span><strong>{{ result.features.tumor_area }}</strong></div>
+                <div class="report-row"><span>Perimeter</span><strong>{{ result.features.tumor_perimeter }}</strong></div>
+                <div class="report-row"><span>Tumor Area %</span><strong>{{ result.features.tumor_area_percent }}</strong></div>
+                <div class="report-row"><span>Bounding Box</span><strong>{{ result.features.bounding_box_width }} × {{ result.features.bounding_box_height }}</strong></div>
+            </div>
+            {% else %}
+            <div class="empty-state small-empty">
+                <p>No tumor feature data available.</p>
+            </div>
+            {% endif %}
+        </article>
+    </section>
+
+    <section class="panel explanation-panel">
+        <div class="panel-header">
+            <div class="panel-header-icon explain-hicon">
+                <svg viewBox="0 0 24 24"><path d="M9 11.75A1.25 1.25 0 1 0 9 14.25 1.25 1.25 0 0 0 9 11.75ZM15 11.75A1.25 1.25 0 1 0 15 14.25 1.25 1.25 0 0 0 15 11.75ZM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
+            </div>
+            <div>
+                <h2>AI Explanation</h2>
+                <p class="panel-subtitle">Grad-CAM assisted clinical reasoning</p>
+            </div>
+        </div>
+        <p class="explanation-text">{{ result.ai_explanation }}</p>
+    </section>
+    {% endif %}
+
+</div>
+
+<script>
+function returnToDashboard() {
+    window.location.href = "/doctor";
+}
+
+document.querySelectorAll(".conf-bar[data-width]").forEach(bar => {
+    bar.style.width = `${bar.dataset.width}%`;
+});
+</script>
+
+
+</body>
+</html>

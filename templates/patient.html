@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Patient Portal  NeuroCare AI</title>
+  <link href="https://fonts.googleapis.com/css2xfamily=Playfair+Display:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --blue-deep: #0a2c6e; --blue-mid: #1a4db8; --blue-light: #3b82f6;
+      --blue-pale: #eff6ff; --teal: #0891b2; --green: #10b981;
+      --orange: #f59e0b; --white: #fff; --off-white: #f8faff;
+      --text-dark: #0f172a; --text-mid: #334155; --text-soft: #64748b; --border: #e2eaf7;
+    }
+    body { font-family: 'DM Sans', sans-serif; background: var(--off-white); color: var(--text-dark); min-height: 100vh; }
+
+    /*  AUTH SCREEN  */
+    .auth-screen {
+      min-height: 100vh; display: flex;
+      background: linear-gradient(135deg, #0a2c6e 0%, #1a4db8 55%, #0891b2 100%);
+    }
+
+    /*  GOOGLE TRANSLATE FAB  */
+    #google_translate_element { position: fixed; left: -9999px; top: -9999px; width: 1px; height: 1px; overflow: hidden; }
+    .lang-fab {
+      position: fixed; bottom: 28px; right: 28px; z-index: 9999;
+      width: 52px; height: 52px; border-radius: 50%;
+      background: var(--blue-deep); box-shadow: 0 6px 22px rgba(10,44,110,.35);
+      display: flex; align-items: center; justify-content: center; cursor: pointer;
+      transition: transform .2s, box-shadow .2s;
+    }
+    .lang-fab:hover { transform: scale(1.1); }
+    .lang-fab svg { width: 26px; height: 26px; fill: white; }
+    .lang-panel {
+      position: fixed; bottom: 90px; right: 28px; z-index: 9998;
+      background: white; border-radius: 16px; padding: 10px;
+      box-shadow: 0 12px 40px rgba(10,44,110,.22);
+      display: none; flex-direction: column; gap: 3px; min-width: 190px;
+      border: 1px solid var(--border);
+    }
+    .lang-panel.open { display: flex; }
+    .lang-panel-title {
+      font-size: .7rem; font-weight: 700; color: var(--text-soft);
+      letter-spacing: 1.5px; text-transform: uppercase;
+      padding: 6px 10px 8px; border-bottom: 1px solid var(--border); margin-bottom: 4px;
+    }
+    .lang-opt {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 12px; border-radius: 9px; cursor: pointer;
+      font-size: .86rem; font-weight: 500; color: var(--text-mid);
+      transition: background .15s; border: none; background: none; width: 100%; text-align: left;
+    }
+    .lang-opt:hover { background: var(--blue-pale); color: var(--blue-mid); }
+    .lang-opt.active { background: var(--blue-pale); color: var(--blue-mid); font-weight: 700; }
+    .lang-flag { font-size: 1.1rem; }
+
+    /* LEFT  guide panel */
+    .auth-guide {
+      width: 44%; padding: 60px 50px; display: flex; flex-direction: column; justify-content: center;
+    }
+    .auth-guide-brand { display: flex; align-items: center; gap: 12px; margin-bottom: 44px; }
+    .auth-logo { width: 42px; height: 42px; border-radius: 10px; background: rgba(255,255,255,.15); display: flex; align-items: center; justify-content: center; }
+    .auth-logo svg { width: 22px; height: 22px; fill: white; }
+    .auth-guide-brand span { font-family: 'Playfair Display', serif; font-size: 1.2rem; font-weight: 800; color: white; }
+
+    .guide-title { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 800; color: white; margin-bottom: 10px; line-height: 1.25; }
+    .guide-sub { font-size: .88rem; color: rgba(255,255,255,.7); margin-bottom: 36px; line-height: 1.65; }
+
+    .steps { display: flex; flex-direction: column; gap: 18px; }
+    .step { display: flex; gap: 16px; align-items: flex-start; }
+    .step-num {
+      width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+      background: rgba(255,255,255,.15); border: 2px solid rgba(255,255,255,.3);
+      display: flex; align-items: center; justify-content: center;
+      font-size: .8rem; font-weight: 800; color: white;
+    }
+    .step-text h4 { font-size: .9rem; font-weight: 700; color: white; margin-bottom: 3px; }
+    .step-text p { font-size: .8rem; color: rgba(255,255,255,.65); line-height: 1.55; }
+
+    /* RIGHT  login/register */
+    .auth-form-wrap {
+      flex: 1; display: flex; align-items: center; justify-content: center;
+      padding: 40px 60px 40px 40px;
+    }
+    .auth-box {
+      background: white; border-radius: 22px; width: 100%; max-width: 420px;
+      padding: 36px 34px; box-shadow: 0 24px 64px rgba(10,44,110,.3);
+    }
+    .auth-tabs { display: flex; gap: 4px; margin-bottom: 28px; background: var(--off-white); border-radius: 10px; padding: 4px; }
+    .auth-tab {
+      flex: 1; padding: 9px; border-radius: 8px; border: none; background: transparent;
+      font-size: .87rem; font-weight: 600; color: var(--text-soft); cursor: pointer; transition: all .2s;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .auth-tab.active { background: white; color: var(--blue-mid); box-shadow: 0 2px 8px rgba(10,44,110,.1); }
+    .form-panel { display: none; }
+    .form-panel.active { display: block; }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { font-size: .8rem; font-weight: 600; color: var(--text-mid); display: block; margin-bottom: 7px; }
+    .form-group input {
+      width: 100%; padding: 11px 14px; border: 1.5px solid var(--border);
+      border-radius: 9px; font-size: .9rem; font-family: 'DM Sans', sans-serif;
+      outline: none; transition: border-color .2s;
+    }
+    .form-group input:focus { border-color: var(--blue-mid); }
+    .form-btn {
+      width: 100%; background: var(--blue-mid); color: white; border: none;
+      padding: 13px; border-radius: 9px; font-size: .95rem; font-weight: 700;
+      cursor: pointer; font-family: 'DM Sans', sans-serif; transition: background .2s; margin-top: 4px;
+    }
+    .form-btn:hover { background: var(--blue-deep); }
+
+    /*  DASHBOARD  */
+    .dashboard { display: none; }
+    nav.dash-nav {
+      background: white; border-bottom: 1px solid var(--border);
+      padding: 0 5%; height: 66px; display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(10,44,110,.06);
+    }
+    .dash-brand { display: flex; align-items: center; gap: 12px; }
+    .dash-logo { width: 38px; height: 38px; border-radius: 9px; background: var(--blue-deep); display: flex; align-items: center; justify-content: center; }
+    .dash-logo svg { width: 20px; height: 20px; fill: white; }
+    .dash-brand span { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 800; color: var(--blue-deep); }
+    .dash-nav-right { display: flex; align-items: center; gap: 14px; }
+    .patient-chip { display: flex; align-items: center; gap: 10px; background: var(--blue-pale); border: 1px solid #bfdbfe; border-radius: 10px; padding: 7px 14px; }
+    .patient-chip .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); }
+    .patient-chip p { font-size: .83rem; font-weight: 600; color: var(--blue-deep); }
+    .patient-chip span { font-size: .73rem; color: var(--text-soft); }
+    .logout-btn { background: none; border: 1px solid var(--border); padding: 7px 14px; border-radius: 8px; font-size: .82rem; color: var(--text-mid); cursor: pointer; font-family: 'DM Sans', sans-serif; transition: border-color .2s; }
+    .logout-btn:hover { border-color: var(--blue-mid); color: var(--blue-mid); }
+
+    .dash-content { max-width: 1100px; margin: 0 auto; padding: 36px 5%; }
+    .welcome-banner {
+      background: linear-gradient(135deg, var(--blue-deep), var(--teal));
+      border-radius: 18px; padding: 30px 36px; margin-bottom: 28px;
+      display: flex; align-items: center; justify-content: space-between;
+      color: white;
+    }
+    .welcome-banner h2 { font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 800; margin-bottom: 6px; }
+    .welcome-banner p { font-size: .88rem; color: rgba(255,255,255,.75); }
+    .welcome-icon { font-size: 3rem; opacity: .7; }
+
+    .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin-bottom: 22px; }
+    .panel { background: white; border-radius: 16px; border: 1px solid var(--border); overflow: hidden; box-shadow: 0 2px 12px rgba(10,44,110,.05); }
+    .panel-header { padding: 18px 22px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
+    .panel-icon { width: 36px; height: 36px; border-radius: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .panel-icon svg { width: 18px; height: 18px; fill: white; }
+    .panel-header h3 { font-size: .92rem; font-weight: 700; color: var(--blue-deep); }
+    .panel-body { padding: 20px 22px; }
+
+    /* doctor info */
+    .doctor-card-inner { display: flex; align-items: center; gap: 16px; }
+    .doc-av { width: 56px; height: 56px; border-radius: 14px; background: var(--blue-mid); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: 800; color: white; flex-shrink: 0; }
+    .doc-info h4 { font-size: 1rem; font-weight: 700; color: var(--blue-deep); margin-bottom: 4px; }
+    .doc-info p { font-size: .82rem; color: var(--text-soft); margin-bottom: 2px; }
+    .online-badge { display: inline-flex; align-items: center; gap: 5px; font-size: .74rem; font-weight: 700; color: var(--green); margin-top: 6px; }
+    .online-badge span { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+
+    /* report card */
+    .report-block { background: var(--blue-pale); border-radius: 12px; padding: 16px 18px; margin-bottom: 14px; border: 1px solid #bfdbfe; }
+    .report-block h4 { font-size: .88rem; font-weight: 700; color: var(--blue-deep); margin-bottom: 10px; }
+    .report-row { display: flex; justify-content: space-between; margin-bottom: 6px; }
+    .report-row span { font-size: .8rem; color: var(--text-soft); }
+    .report-row strong { font-size: .8rem; color: var(--text-dark); }
+    .tumor-badge { display: inline-block; background: #fef3c7; color: #92400e; padding: 4px 12px; border-radius: 20px; font-size: .78rem; font-weight: 700; margin-bottom: 10px; }
+    .report-notes { font-size: .83rem; color: var(--text-mid); line-height: 1.65; }
+
+    /* message */
+    .msg-bubble { background: var(--off-white); border-radius: 12px 12px 12px 4px; padding: 14px 16px; border: 1px solid var(--border); margin-bottom: 12px; }
+    .msg-bubble p { font-size: .85rem; color: var(--text-mid); line-height: 1.65; }
+    .msg-meta { font-size: .72rem; color: var(--text-soft); margin-top: 8px; }
+
+    /* tag */
+    .tag { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: .72rem; font-weight: 700; }
+    .tag-green { background: #d1fae5; color: #065f46; }
+    .tag-orange { background: #fef3c7; color: #92400e; }
+
+    @media(max-width: 700px) {
+      .auth-guide { display: none; }
+      .auth-form-wrap { padding: 30px 24px; }
+      .dash-grid { grid-template-columns: 1fr; }
+      .welcome-banner { flex-direction: column; gap: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Google Translate hidden element -->
+<div id="google_translate_element"></div>
+
+<!--  LANGUAGE FAB  -->
+<div class="lang-fab" id="langFab" onclick="toggleLangPanel()">
+  <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm6.93 6h-2.95c-.32-1.25-.78-2.45-1.38-3.56 1.84.63 3.37 1.9 4.33 3.56zM12 4.04c.83 1.2 1.48 2.53 1.91 3.96h-3.82c.43-1.43 1.08-2.76 1.91-3.96zM4.26 14C4.1 13.36 4 12.69 4 12s.1-1.36.26-2h3.38c-.08.66-.14 1.32-.14 2s.06 1.34.14 2H4.26zm.82 2h2.95c.32 1.25.78 2.45 1.38 3.56-1.84-.63-3.37-1.9-4.33-3.56zm2.95-8H5.08c.96-1.66 2.49-2.93 4.33-3.56C8.81 5.55 8.35 6.75 8.03 8zM12 19.96c-.83-1.2-1.48-2.53-1.91-3.96h3.82c-.43 1.43-1.08 2.76-1.91 3.96zM14.34 14H9.66c-.09-.66-.16-1.32-.16-2s.07-1.35.16-2h4.68c.09.65.16 1.32.16 2s-.07 1.34-.16 2zm.25 5.56c.6-1.11 1.06-2.31 1.38-3.56h2.95c-.96 1.65-2.49 2.93-4.33 3.56zM16.36 14c.08-.66.14-1.32.14-2s-.06-1.34-.14-2h3.38c.16.64.26 1.31.26 2s-.1 1.36-.26 2h-3.38z"/></svg>
+</div>
+<div class="lang-panel" id="langPanel">
+  <div class="lang-panel-title">Translate Page</div>
+  <button class="lang-opt active" onclick="translateTo('en')"><span class="lang-flag">EN</span> English</button>
+  <button class="lang-opt" onclick="translateTo('ta')"><span class="lang-flag">TA</span> Tamil</button>
+  <button class="lang-opt" onclick="translateTo('hi')"><span class="lang-flag">HI</span> Hindi</button>
+  <button class="lang-opt" onclick="translateTo('te')"><span class="lang-flag">TE</span> Telugu</button>
+  <button class="lang-opt" onclick="translateTo('ml')"><span class="lang-flag">ML</span> Malayalam</button>
+  <button class="lang-opt" onclick="translateTo('kn')"><span class="lang-flag">KN</span> Kannada</button>
+  <button class="lang-opt" onclick="translateTo('fr')"><span class="lang-flag">FR</span> French</button>
+  <button class="lang-opt" onclick="translateTo('de')"><span class="lang-flag">DE</span> German</button>
+  <button class="lang-opt" onclick="translateTo('ar')"><span class="lang-flag">AR</span> Arabic</button>
+  <button class="lang-opt" onclick="translateTo('zh-CN')"><span class="lang-flag">ZH</span> Chinese</button>
+</div>
+<!--  AUTH SCREEN  -->
+<div class="auth-screen" id="authScreen">
+  <!-- LEFT: Step guide -->
+  <div class="auth-guide">
+    <div class="auth-guide-brand">
+      <div class="auth-logo"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg></div>
+      <span>NeuroCare AI</span>
+    </div>
+    <h2 class="guide-title" id="guideTitle">Your Brain Health, Simplified</h2>
+    <p class="guide-sub" id="guideSub">Access your MRI results, doctor messages, and health reports  all in one secure place.</p>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-text">
+          <h4 id="step1h">Register or Log In</h4>
+          <p id="step1p">New patientx Click Register tab and fill your details. Returningx Just log in with your email and password.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-text">
+          <h4 id="step2h">View Your Doctor</h4>
+          <p id="step2p">Once logged in, you can see your assigned specialist doctor and their contact details.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-text">
+          <h4 id="step3h">Read Your MRI Report</h4>
+          <p id="step3p">Your doctor will send an AI-assisted MRI report with findings, tumor classification, and recommendations.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-text">
+          <h4 id="step4h">Read Your Doctor's Message</h4>
+          <p id="step4p">A personalised message from your doctor explains your results in simple, easy-to-understand language.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Login / Register -->
+  <div class="auth-form-wrap">
+    <div class="auth-box">
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="loginTab" onclick="switchTab('login')" data-key="login">Login</button>
+        <button class="auth-tab" id="registerTab" onclick="switchTab('register')" data-key="register">Register</button>
+      </div>
+
+<!-- LOGIN -->
+<div class="form-panel active" id="loginPanel">
+  <div class="form-group">
+    <label id="lbl_email">Email Address</label>
+    <input type="email" id="patientEmail" placeholder="you@example.com"/>
+  </div>
+  <div class="form-group">
+    <label id="lbl_pass">Password</label>
+    <input type="password" id="patientPassword" placeholder="Password"/>
+  </div>
+  <button class="form-btn" onclick="doLogin()" id="btn_login">Sign In </button>
+</div>
+
+<!-- REGISTER -->
+<div class="form-panel" id="registerPanel">
+  <div class="form-group">
+    <label>Full Name</label>
+    <input type="text" id="regName" placeholder="Ananya Krishnan"/>
+  </div>
+  <div class="form-group">
+    <label>Email Address</label>
+    <input type="email" id="regEmail" placeholder="you@example.com"/>
+  </div>
+  <div class="form-group">
+    <label>Phone Number</label>
+    <input type="text" id="regPhone" placeholder="+91 98765 43210"/>
+  </div>
+  <div class="form-group">
+    <label>Age</label>
+    <input type="number" id="regAge" placeholder="Age"/>
+  </div>
+  <div class="form-group">
+    <label>Gender</label>
+    <input type="text" id="regGender" placeholder="F / M"/>
+  </div>
+  <div class="form-group">
+    <label>Address</label>
+    <input type="text" id="regAddress" placeholder="Address"/>
+  </div>
+  <div class="form-group">
+    <label>Password</label>
+    <input type="password" id="regPassword" placeholder="Create a password"/>
+  </div>
+  <button class="form-btn" onclick="doRegister()" id="btn_register">Create Account </button>
+</div>
+
+
+<!--  DASHBOARD  -->
+    </div><!-- /auth-box -->
+  </div><!-- /auth-form-wrap -->
+</div><!-- /authScreen -->
+
+<div class="dashboard" id="dashboard">
+  <nav class="dash-nav">
+    <div class="dash-brand">
+      <div class="dash-logo"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg></div>
+      <span>NeuroCare AI</span>
+    </div>
+    <div class="dash-nav-right">
+      <div class="patient-chip">
+        <div class="dot"></div>
+        <div><p id="chipPatientName">Patient</p><span id="chipPatientCode">Patient  </span></div>
+      </div>
+      <button class="logout-btn" onclick="doLogout()">Logout</button>
+    </div>
+  </nav>
+
+  <div class="dash-content">
+    <div class="welcome-banner">
+      <div>
+        <h2 id="welcomeTitle">Welcome back, Ananya </h2>
+        <p id="welcomeSub">Your MRI report has been reviewed. Your doctor has sent you a message.</p>
+      </div>
+      <div class="welcome-icon"></div>
+    </div>
+
+    <div class="dash-grid">
+      <!-- Doctor Card -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-icon" style="background:var(--blue-mid)">
+            <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+          </div>
+          <h3 id="doctorPanelTitle">Your Assigned Doctor</h3>
+        </div>
+        <div class="panel-body">
+          <div class="doctor-card-inner">
+            <div class="doc-av" id="doctorAvatar">DR</div>
+            <div class="doc-info">
+              <h4 id="doctorName">Not assigned</h4>
+              <p id="doctorSpecialization">Hospital Department: </p>
+              <p id="doctorPhone">Phone: </p>
+              <p id="doctorDuty">Duty: </p>
+              <div class="online-badge"><span></span>Available Today</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MRI Status -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-icon" style="background:var(--teal)">
+            <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14H7v-2h5v2zm5-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+          </div>
+          <h3 id="mriPanelTitle">MRI Scan Status</h3>
+        </div>
+        <div class="panel-body">
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <span style="font-size:.85rem;color:var(--text-mid)" id="mriScanLabel">Scan Uploaded</span>
+              <span class="tag tag-green"> Done</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <span style="font-size:.85rem;color:var(--text-mid)" id="mriAnalysisLabel">AI Analysis</span>
+              <span class="tag tag-green"> Complete</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <span style="font-size:.85rem;color:var(--text-mid)" id="mriReviewLabel">Doctor Review</span>
+              <span class="tag tag-green"> Done</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <span style="font-size:.85rem;color:var(--text-mid)" id="mriReportLabel">Report Sent</span>
+              <span class="tag tag-green"> Received</span>
+            </div>
+            <div style="height:6px;background:#e2eaf7;border-radius:6px;margin-top:4px;overflow:hidden">
+              <div style="width:100%;height:100%;background:linear-gradient(90deg,#10b981,#0891b2);border-radius:6px"></div>
+            </div>
+            <p style="font-size:.76rem;color:var(--green);font-weight:600;text-align:right" id="mriCompleteLabel">All steps complete!</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MRI Report -->
+    <div class="panel" style="margin-bottom:22px">
+      <div class="panel-header">
+        <div class="panel-icon" style="background:var(--orange)">
+          <svg viewBox="0 0 24 24"><path d="M9 11.75A1.25 1.25 0 1 0 9 14.25 1.25 1.25 0 0 0 9 11.75ZM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
+        </div>
+        <h3 id="reportPanelTitle">Your MRI Report</h3>
+      </div>
+      <div class="panel-body">
+        <div class="report-block">
+          <h4 id="reportFindingsLabel">Clinical Findings</h4>
+          <div class="report-row">
+  <span id="reportDateLabel">Report Date</span>
+  <strong id="reportDate"></strong>
+</div>
+<div class="report-row">
+  <span id="reportDoctorLabel">Reviewed By</span>
+  <strong id="reviewedBy"></strong>
+</div>
+<div class="report-row">
+  <span id="reportAILabel">AI Confidence</span>
+  <strong id="aiConfidence"></strong>
+</div>
+
+          <div style="margin:12px 0 8px">
+            <span id="reportClassLabel" style="font-size:.75rem;font-weight:700;color:var(--text-soft);display:block;margin-bottom:6px">TUMOR CLASSIFICATION</span>
+            <span class="tumor-badge" id="tumorType">Pending</span>
+          </div>
+          <p class="report-notes" id="reportNotes">
+            MRI scan reveals a heterogeneous mass in the right temporal lobe measuring approximately 3.2  2.8 cm with irregular borders and surrounding oedema. Enhancement pattern is consistent with high-grade glial neoplasm. No midline shift detected. Recommend urgent neurosurgical consultation and stereotactic biopsy.
+          </p>
+        </div>
+        <div class="report-block" style="background:#f0fdf4;border-color:#bbf7d0">
+          <h4 id="reportRecLabel" style="color:#065f46">Doctor's Recommendation</h4>
+          <p class="report-notes" id="reportRecText">
+            Immediate referral to neurosurgery for surgical planning. PET-CT scan advised for staging. Begin dexamethasone 4mg thrice daily to reduce cerebral oedema. Follow-up appointment scheduled for 18 May 2026.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Doctor's Message -->
+    <div class="panel" style="margin-bottom:40px">
+      <div class="panel-header">
+        <div class="panel-icon" style="background:#7c3aed">
+          <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"/></svg>
+        </div>
+        <h3 id="msgPanelTitle">Message from Dr. Priya Sharma</h3>
+      </div>
+      <div class="panel-body">
+        <div class="msg-bubble">
+          <p id="doctorMessage">
+            Dear Ananya, I have reviewed your MRI scan results carefully. The AI system has detected an area of concern in your brain that requires prompt attention. Please do not be alarmed  we have a clear plan ahead. I have scheduled a consultation for you next week where we will discuss all your options in detail. Please bring a family member or a trusted person with you. You are in safe hands. If you have any questions before then, please don't hesitate to reach out through this portal. Take care and stay strong.
+          </p>
+          <div class="msg-meta" id="messageMeta"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function googleTranslateElementInit() {
+  new google.translate.TranslateElement({
+    pageLanguage: 'en',
+    autoDisplay: false,
+  }, 'google_translate_element');
+}
+
+function translateTo(langCode) {
+  document.querySelectorAll('.lang-opt').forEach(el => el.classList.remove('active'));
+
+  if (event && event.currentTarget) {
+    event.currentTarget.classList.add('active');
+  }
+
+  document.cookie = `googtrans=/en/${langCode}; path=/`;
+
+  if (location.hostname !== '127.0.0.1' && location.hostname !== 'localhost') {
+    document.cookie = `googtrans=/en/${langCode}; domain=${location.hostname}; path=/`;
+  }
+
+  const tryTranslate = setInterval(() => {
+    const selectEl = document.querySelector('.goog-te-combo');
+
+    if (selectEl) {
+      clearInterval(tryTranslate);
+      selectEl.value = langCode;
+      selectEl.dispatchEvent(new Event('change'));
+      document.getElementById('langPanel').classList.remove('open');
+      document.documentElement.dir = langCode === 'ar' ? 'rtl' : 'ltr';
+    }
+  }, 300);
+
+  setTimeout(() => {
+    clearInterval(tryTranslate);
+  }, 5000);
+}
+
+
+function toggleLangPanel() {
+  document.getElementById('langPanel').classList.toggle('open');
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('#langFab') && !e.target.closest('#langPanel')) {
+    document.getElementById('langPanel').classList.remove('open');
+  }
+});
+
+function switchTab(tab){
+  document.getElementById('loginPanel').classList.toggle('active', tab === 'login');
+  document.getElementById('registerPanel').classList.toggle('active', tab === 'register');
+  document.getElementById('loginTab').classList.toggle('active', tab === 'login');
+  document.getElementById('registerTab').classList.toggle('active', tab === 'register');
+}
+
+function initials(name) {
+  if (!name) return 'DR';
+  return name.trim().split(/\s+/).slice(0, 2).map(w => w[0].toUpperCase()).join('');
+}
+
+async function doLogin(){
+  const email = document.getElementById('patientEmail').value.trim();
+  const password = document.getElementById('patientPassword').value.trim();
+
+  const res = await fetch('/api/patient/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password })
+  });
+
+  const data = await res.json();
+
+  if (!data.success) {
+    alert(data.message || 'Invalid patient login');
+    return;
+  }
+
+  localStorage.setItem('patient_id', data.patient.patient_id);
+  document.getElementById('authScreen').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'block';
+
+  loadPatientReport(data.patient.patient_id);
+}
+
+async function doRegister() {
+  const patient_name = document.getElementById('regName').value.trim();
+  const email = document.getElementById('regEmail').value.trim();
+  const phone_no = document.getElementById('regPhone').value.trim();
+  const age = document.getElementById('regAge').value.trim();
+  const gender = document.getElementById('regGender').value.trim();
+  const address = document.getElementById('regAddress').value.trim();
+  const password = document.getElementById('regPassword').value.trim();
+
+  const res = await fetch('/api/patient/register', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ patient_name, email, password, phone_no, age, gender, address })
+  });
+
+  const data = await res.json();
+
+  if (!data.success) {
+    alert(data.message || 'Registration failed');
+    return;
+  }
+
+  alert('Registration successful. Please login.');
+  document.getElementById('patientEmail').value = email;
+  document.getElementById('patientPassword').value = password;
+  switchTab('login');
+}
+
+async function loadPatientReport(patientId) {
+  const res = await fetch(`/api/patient/report/${patientId}`);
+  const result = await res.json();
+
+  if (!result.success) {
+    alert(result.message || 'Unable to load patient report');
+    return;
+  }
+
+  const d = result.data;
+
+  document.getElementById('chipPatientName').textContent = d.patient_name || 'Patient';
+  document.getElementById('chipPatientCode').textContent = `Patient  ${d.patient_code || ''}`;
+
+  document.getElementById('welcomeTitle').textContent = `Welcome back, ${d.patient_name || 'Patient'}`;
+  document.getElementById('welcomeSub').textContent =
+    d.report_sent === 'Yes'
+      ? 'Your MRI report has been reviewed. Your doctor has sent you a message.'
+      : 'Your report is not available yet. Please check again later.';
+
+  document.getElementById('doctorAvatar').textContent = initials(d.doctor_name);
+  document.getElementById('doctorName').textContent = d.doctor_name || 'Not assigned';
+  document.getElementById('doctorSpecialization').textContent = `Department: ${d.specialization || ''}`;
+  document.getElementById('doctorPhone').textContent = `Phone: ${d.doctor_phone || ''}`;
+  document.getElementById('doctorDuty').textContent = `Duty: ${d.duty_time || ''}`;
+
+  document.getElementById('reportDate').textContent = d.report_date || d.scan_date || '';
+  document.getElementById('reviewedBy').textContent =
+    d.doctor_name ? `${d.doctor_name}  ${d.specialization || ''}` : '';
+  document.getElementById('aiConfidence').textContent =
+    d.confidence_score ? `${d.confidence_score}%` : '';
+
+  document.getElementById('tumorType').textContent = d.tumor_type || 'Pending';
+
+  document.getElementById('reportNotes').textContent =
+    d.report_sent === 'Yes'
+      ? (d.clinical_report || 'Report details are not available.')
+      : 'Your report has not been sent by the doctor yet.';
+
+  document.getElementById('reportRecText').textContent =
+    d.report_sent === 'Yes'
+      ? 'Please follow your doctors advice and attend any recommended follow-up appointments.'
+      : 'No recommendation has been sent yet.';
+
+  document.getElementById('msgPanelTitle').textContent =
+    d.doctor_name ? `Message from ${d.doctor_name}` : 'Doctor Message';
+
+  document.getElementById('doctorMessage').textContent =
+    d.report_sent === 'Yes'
+      ? (d.doctor_message || 'No message added by doctor.')
+      : 'Your doctor has not sent a message yet.';
+
+  document.getElementById('messageMeta').textContent =
+    d.report_sent === 'Yes'
+      ? `Sent by ${d.doctor_name || 'Doctor'}  ${d.report_date || ''}`
+      : 'Not sent yet';
+}
+
+function doLogout(){
+  localStorage.removeItem('patient_id');
+  document.getElementById('authScreen').style.display = 'flex';
+  document.getElementById('dashboard').style.display = 'none';
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  const patientId = localStorage.getItem('patient_id');
+  if (patientId) {
+    document.getElementById('authScreen').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    loadPatientReport(patientId);
+  }
+});
+</script>
+
+
+
+<!-- Google Translate API -->
+<script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+<style>
+  .goog-te-banner-frame { display: none !important; }
+  body { top: 0 !important; }
+  .goog-te-gadget { font-size: 0 !important; }
+</style>
+
+</body>
+</html>

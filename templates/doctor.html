@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Doctor Portal – NeuroCare AI</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    :root {
+      --blue-deep:#0a2c6e; --blue-mid:#1a4db8; --blue-light:#3b82f6;
+      --blue-pale:#eff6ff; --blue-pale2:#dbeafe; --teal:#0891b2;
+      --green:#10b981; --orange:#f59e0b; --red:#ef4444;
+      --white:#fff; --off-white:#f8faff;
+      --text-dark:#0f172a; --text-mid:#334155; --text-soft:#64748b;
+      --border:#e2eaf7; --sidebar-w:250px;
+    }
+    body { font-family:'DM Sans',sans-serif; background:var(--off-white); color:var(--text-dark); min-height:100vh; }
+
+    /* ════════════════════════════
+       LOGIN SCREEN
+    ════════════════════════════ */
+    #loginScreen {
+      position:fixed; inset:0; z-index:9999;
+      background:linear-gradient(135deg,#0a2c6e 0%,#1a4db8 55%,#0891b2 100%);
+      display:flex; align-items:center; justify-content:center;
+    }
+    .login-box {
+      background:white; border-radius:22px; width:420px; max-width:94vw;
+      padding:40px 38px; box-shadow:0 24px 64px rgba(10,44,110,.35);
+    }
+    .login-logo { display:flex; align-items:center; gap:12px; margin-bottom:28px; }
+    .login-logo-icon { width:44px; height:44px; border-radius:11px; background:var(--blue-deep); display:flex; align-items:center; justify-content:center; }
+    .login-logo-icon svg { width:22px; height:22px; fill:white; }
+    .login-logo-name { font-family:'Playfair Display',serif; font-size:1.2rem; font-weight:800; color:var(--blue-deep); }
+    .login-box h2 { font-size:1.4rem; font-weight:800; color:var(--blue-deep); margin-bottom:6px; }
+    .login-box > p { font-size:.85rem; color:var(--text-soft); margin-bottom:28px; }
+    .login-err { display:none; font-size:.82rem; color:var(--red); background:#fef2f2; border:1px solid #fecaca; border-radius:8px; padding:10px 14px; margin-bottom:16px; }
+    .form-group { margin-bottom:18px; }
+    .form-group label { font-size:.8rem; font-weight:600; color:var(--text-mid); display:block; margin-bottom:7px; }
+    .form-group input { width:100%; padding:11px 14px; border:1.5px solid var(--border); border-radius:9px; font-size:.9rem; font-family:'DM Sans',sans-serif; outline:none; transition:border-color .2s; color:var(--text-dark); background:white; }
+    .form-group input:focus { border-color:var(--blue-mid); }
+    .login-btn { width:100%; background:var(--blue-mid); color:white; border:none; padding:13px; border-radius:9px; font-size:.95rem; font-weight:700; cursor:pointer; font-family:'DM Sans',sans-serif; transition:background .2s; margin-top:4px; }
+    .login-btn:hover { background:var(--blue-deep); }
+    .login-hint { font-size:.75rem; color:var(--text-soft); text-align:center; margin-top:14px; }
+    .login-hint a { color:var(--blue-mid); text-decoration:none; }
+
+    /* ════════════════════════════
+       DASHBOARD
+    ════════════════════════════ */
+    #dashboard { display:none; min-height:100vh; }
+
+    /* SIDEBAR */
+    .sidebar {
+      width:var(--sidebar-w); background:var(--blue-deep);
+      position:fixed; top:0; left:0; height:100vh;
+      display:flex; flex-direction:column; z-index:100;
+      box-shadow:4px 0 20px rgba(10,44,110,.2);
+    }
+    .sb-brand { padding:22px 20px; border-bottom:1px solid rgba(255,255,255,.08); display:flex; align-items:center; gap:12px; }
+    .sb-logo { width:38px; height:38px; background:var(--blue-light); border-radius:9px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .sb-logo svg { width:20px; height:20px; fill:white; }
+    .sb-brand span { font-family:'Playfair Display',serif; font-size:1.05rem; font-weight:800; color:white; }
+    .sb-section { padding:18px 14px 6px; font-size:.68rem; font-weight:700; color:rgba(255,255,255,.3); letter-spacing:2px; text-transform:uppercase; }
+    .sb-nav { list-style:none; padding:0 10px; flex:1; }
+    .sb-nav li a { display:flex; align-items:center; gap:12px; padding:11px 12px; border-radius:10px; text-decoration:none; font-size:.87rem; font-weight:500; color:rgba(255,255,255,.6); transition:background .2s,color .2s; margin-bottom:2px; }
+    .sb-nav li a svg { width:18px; height:18px; fill:currentColor; flex-shrink:0; }
+    .sb-nav li a:hover, .sb-nav li a.active { background:var(--blue-mid); color:white; }
+    .sb-footer { padding:14px; border-top:1px solid rgba(255,255,255,.08); display:flex; flex-direction:column; gap:4px; }
+    .sb-link { display:flex; align-items:center; gap:8px; padding:9px 12px; border-radius:8px; font-size:.82rem; color:rgba(255,255,255,.45); cursor:pointer; border:none; background:none; width:100%; text-align:left; font-family:'DM Sans',sans-serif; transition:color .2s; text-decoration:none; }
+    .sb-link:hover { color:white; }
+    .sb-link svg { width:14px; height:14px; fill:currentColor; }
+    .sb-user { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:10px; background:rgba(255,255,255,.06); margin-top:4px; }
+    .sb-avatar { width:34px; height:34px; border-radius:8px; background:var(--teal); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:.82rem; color:white; flex-shrink:0; }
+    .sb-user p { font-size:.82rem; font-weight:600; color:white; line-height:1.3; }
+    .sb-user span { font-size:.7rem; color:rgba(255,255,255,.4); }
+
+    /* MAIN */
+    .main { margin-left:var(--sidebar-w); display:flex; flex-direction:column; min-height:100vh; }
+    .topbar { background:white; border-bottom:1px solid var(--border); padding:0 30px; height:64px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:90; box-shadow:0 2px 8px rgba(10,44,110,.05); }
+    .topbar h1 { font-size:1.1rem; font-weight:700; color:var(--blue-deep); }
+    .topbar p  { font-size:.78rem; color:var(--text-soft); margin-top:2px; }
+    .doc-chip { display:flex; align-items:center; gap:10px; background:var(--blue-pale); border:1px solid var(--blue-pale2); border-radius:10px; padding:7px 14px; }
+    .doc-chip .dot { width:8px; height:8px; border-radius:50%; background:var(--green); flex-shrink:0; }
+    .doc-chip strong { font-size:.84rem; font-weight:700; color:var(--blue-deep); }
+    .doc-chip span   { font-size:.73rem; color:var(--text-soft); }
+    .content { padding:28px 30px; flex:1; }
+
+    /* STAT CARDS */
+    .stat-row { display:grid; grid-template-columns:repeat(4,1fr); gap:18px; margin-bottom:26px; }
+    .stat-card { background:white; border-radius:14px; padding:20px 22px; border:1px solid var(--border); box-shadow:0 2px 10px rgba(10,44,110,.05); }
+    .stat-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; }
+    .s-icon { width:42px; height:42px; border-radius:10px; display:flex; align-items:center; justify-content:center; }
+    .s-icon svg { width:20px; height:20px; }
+    .s-badge { font-size:.7rem; font-weight:700; padding:3px 8px; border-radius:20px; }
+    .stat-card h2 { font-size:1.85rem; font-weight:800; color:var(--blue-deep); margin-bottom:3px; }
+    .stat-card p  { font-size:.78rem; color:var(--text-soft); }
+
+    /* TABLE CARD */
+    .tbl-card { background:white; border-radius:16px; border:1px solid var(--border); overflow:hidden; box-shadow:0 2px 10px rgba(10,44,110,.05); }
+    .tbl-head { padding:16px 22px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+    .tbl-head h3 { font-size:.94rem; font-weight:700; color:var(--blue-deep); }
+    .tbl-hint  { font-size:.78rem; color:var(--text-soft); }
+    table { width:100%; border-collapse:collapse; }
+    thead th { padding:11px 16px; font-size:.72rem; font-weight:700; color:var(--text-soft); text-transform:uppercase; letter-spacing:1px; background:var(--off-white); border-bottom:1px solid var(--border); text-align:left; white-space:nowrap; }
+    tbody tr { border-bottom:1px solid var(--border); transition:background .2s; }
+    tbody tr:last-child { border-bottom:none; }
+    tbody tr:hover { background:var(--blue-pale); }
+    tbody td { padding:13px 16px; font-size:.84rem; color:var(--text-mid); vertical-align:middle; }
+    .p-cell { display:flex; align-items:center; gap:10px; }
+    .p-av { width:32px; height:32px; border-radius:8px; background:var(--blue-pale); color:var(--blue-mid); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:.76rem; flex-shrink:0; }
+
+    /* TAGS */
+    .tag { display:inline-block; padding:3px 9px; border-radius:20px; font-size:.71rem; font-weight:700; white-space:nowrap; }
+    .t-green  { background:#d1fae5; color:#065f46; }
+    .t-yellow { background:#fef3c7; color:#92400e; }
+    .t-blue   { background:#dbeafe; color:#1e40af; }
+    .t-gray   { background:#f1f5f9; color:#475569; }
+
+    /* ACTION BUTTONS */
+    .btn-predict {
+      background:var(--teal); color:white; border:none;
+      padding:8px 16px; border-radius:8px; font-size:.78rem; font-weight:700;
+      cursor:pointer; font-family:'DM Sans',sans-serif;
+      display:inline-flex; align-items:center; gap:6px;
+      transition:background .2s, transform .15s;
+    }
+    .btn-predict:hover { background:#0e7490; transform:scale(1.04); }
+
+    .btn-send {
+      background:var(--blue-mid); color:white; border:none;
+      padding:8px 16px; border-radius:8px; font-size:.78rem; font-weight:700;
+      cursor:pointer; font-family:'DM Sans',sans-serif;
+      display:inline-flex; align-items:center; gap:6px;
+      box-shadow:0 4px 14px rgba(26,77,184,.3);
+      transition:background .2s, transform .15s;
+      animation:popIn .3s ease;
+    }
+    .btn-send:hover { background:var(--blue-deep); transform:scale(1.04); }
+    @keyframes popIn { from{transform:scale(.75);opacity:0} to{transform:scale(1);opacity:1} }
+
+    .btn-view {
+      background: var(--off-white); color: var(--blue-mid);
+      border: 1.5px solid var(--blue-pale2); padding:8px 14px; border-radius:8px;
+      font-size:.78rem; font-weight:700; cursor:pointer; font-family:'DM Sans',sans-serif;
+      display:inline-flex; align-items:center; gap:6px;
+      transition:background .2s, transform .15s; text-decoration:none; white-space:nowrap;
+}
+.btn-view:hover { background:var(--blue-pale); transform:scale(1.04); }
+
+    .lbl-done { font-size:.78rem; color:var(--green); font-weight:700; }
+    .lbl-wait { font-size:.78rem; color:var(--text-soft); }
+
+    /* flash animation when row is updated on return */
+    .row-highlight { animation:rowHL 2.5s ease forwards; }
+    @keyframes rowHL {
+      0%   { background:#bfdbfe; }
+      100% { background:transparent; }
+    }
+
+    /* ════════════════════════════
+       SEND REPORT MODAL
+    ════════════════════════════ */
+    .overlay { display:none; position:fixed; inset:0; background:rgba(10,44,110,.45); backdrop-filter:blur(4px); z-index:9998; align-items:center; justify-content:center; }
+    .overlay.open { display:flex; }
+    .modal { background:white; border-radius:20px; width:580px; max-width:96vw; max-height:92vh; display:flex; flex-direction:column; box-shadow:0 24px 64px rgba(10,44,110,.28); overflow:hidden; }
+    .m-head { padding:20px 26px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
+    .m-head h3 { font-size:1rem; font-weight:700; color:var(--blue-deep); }
+    .m-close { background:none; border:none; font-size:1.5rem; cursor:pointer; color:var(--text-soft); line-height:1; }
+    .m-body { padding:22px 26px; overflow-y:auto; flex:1; }
+    .m-foot { padding:14px 26px; border-top:1px solid var(--border); display:flex; gap:10px; justify-content:flex-end; flex-shrink:0; background:white; }
+
+    /* patient summary row in modal */
+    .m-patient { background:var(--blue-pale); border:1px solid var(--blue-pale2); border-radius:12px; padding:14px 16px; display:flex; flex-wrap:wrap; gap:18px; margin-bottom:18px; }
+    .m-patient div { font-size:.82rem; }
+    .m-patient span { display:block; font-size:.68rem; font-weight:700; color:var(--text-soft); text-transform:uppercase; letter-spacing:.8px; margin-bottom:3px; }
+    .m-patient strong { color:var(--blue-deep); font-weight:700; }
+
+    /* AI result banner */
+    .ai-banner { background:#d1fae5; border:1px solid #6ee7b7; border-radius:12px; padding:12px 16px; display:flex; align-items:center; gap:10px; margin-bottom:18px; }
+    .ai-banner svg { width:20px; height:20px; fill:#059669; flex-shrink:0; }
+    .ai-banner div p { font-size:.8rem; font-weight:700; color:#065f46; }
+    .ai-banner div span { font-size:.74rem; color:#047857; }
+
+    /* form fields */
+    .f-group { margin-bottom:16px; }
+    .f-group label { font-size:.76rem; font-weight:700; color:var(--text-mid); display:block; margin-bottom:7px; text-transform:uppercase; letter-spacing:.8px; }
+    .f-group textarea, .f-group select, .f-group input[type=text] {
+      width:100%; padding:11px 14px; border:1.5px solid var(--border);
+      border-radius:9px; font-size:.87rem; font-family:'DM Sans',sans-serif;
+      outline:none; transition:border-color .2s; resize:vertical; color:var(--text-dark); background:white;
+    }
+    .f-group textarea:focus, .f-group select:focus { border-color:var(--blue-mid); }
+    .f-group textarea { min-height:80px; }
+    .f-row2 { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+
+    /* modal buttons */
+    .mbtn-cancel { background:var(--off-white); border:1px solid var(--border); padding:10px 20px; border-radius:9px; font-size:.86rem; font-weight:600; cursor:pointer; color:var(--text-mid); font-family:'DM Sans',sans-serif; }
+    .mbtn-send { background:var(--blue-mid); color:white; border:none; padding:10px 24px; border-radius:9px; font-size:.86rem; font-weight:700; cursor:pointer; font-family:'DM Sans',sans-serif; transition:background .2s; display:flex; align-items:center; gap:8px; }
+    .mbtn-send:hover { background:var(--blue-deep); }
+    .mbtn-send svg { width:16px; height:16px; fill:white; }
+
+    /* TOAST */
+    .toast { position:fixed; bottom:28px; right:28px; z-index:99999; background:var(--blue-deep); color:white; padding:14px 22px; border-radius:12px; font-size:.88rem; font-weight:600; box-shadow:0 8px 24px rgba(10,44,110,.35); display:none; align-items:center; gap:10px; }
+    .toast.show { display:flex; animation:slideUp .3s ease; }
+    .toast svg { width:18px; height:18px; fill:#34d399; flex-shrink:0; }
+    @keyframes slideUp { from{transform:translateY(16px);opacity:0} to{transform:translateY(0);opacity:1} }
+
+    a { text-decoration:none; color:inherit; }
+  </style>
+</head>
+<body>
+
+<!-- ══════════ LOGIN SCREEN ══════════ -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="login-logo-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
+      </div>
+      <span class="login-logo-name">NeuroCare AI</span>
+    </div>
+    <h2>Doctor Login</h2>
+    <p>Sign in to your portal to view and manage your patients.</p>
+    <div class="login-err" id="loginErr"></div>
+    <div class="form-group">
+      <label>Doctor ID / Email</label>
+      <input type="text" id="loginId" placeholder="dr.priya@neurocare.ai" autocomplete="off"/>
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="loginPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/>
+    </div>
+    <button class="login-btn" onclick="doLogin()">Sign In →</button>
+    <p class="login-hint">Demo: any credentials · <a href="/">← Back to Home</a></p>
+  </div>
+</div>
+
+<!-- ══════════ DASHBOARD ══════════ -->
+<div id="dashboard">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sb-brand">
+      <div class="sb-logo"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg></div>
+      <span>NeuroCare AI</span>
+    </div>
+    <div class="sb-section">Menu</div>
+    <ul class="sb-nav">
+      <li><a href="#" class="active"><svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>Dashboard</a></li>
+      <li><a href="#"><svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 8 1.34 8 4v2H4v-2c0-2.66 5.3-4 8-4zm0-2a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/></svg>My Patients</a></li>
+      <li><a href="#"><svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14H7v-2h5v2zm5-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>Reports</a></li>
+      <li><a href="#"><svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"/></svg>Messages</a></li>
+    </ul>
+    <div class="sb-footer">
+      <a href="/" class="sb-link"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>Home</a>
+      <button class="sb-link" onclick="doLogout()"><svg viewBox="0 0 24 24"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5-5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg>Logout</button>
+      <div class="sb-user">
+        <div class="sb-avatar" id="sbAv">DR</div>
+        <div><p id="sbName">Doctor</p><span>Neurosurgery</span></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div>
+        <h1>Doctor Dashboard</h1>
+        <p>Your assigned patients &amp; AI predictions</p>
+      </div>
+      <div class="doc-chip">
+        <div class="dot"></div>
+        <div><strong id="chipName">Doctor</strong><br/><span id="doctorDutyTime">On Duty</span></div>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- STATS -->
+      <div class="stat-row">
+        <div class="stat-card">
+          <div class="stat-top">
+            <div class="s-icon" style="background:#dbeafe"><svg viewBox="0 0 24 24" style="fill:#1a4db8"><path d="M12 12c2.7 0 8 1.34 8 4v2H4v-2c0-2.66 5.3-4 8-4zm0-2a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/></svg></div>
+            <span class="s-badge" style="background:#dbeafe;color:#1e40af">Total</span>
+          </div>
+          <h2 id="cntAssigned">0</h2><p>Assigned Patients</p>
+        </div>
+        <div class="stat-card">
+          <div class="stat-top">
+            <div class="s-icon" style="background:#fef3c7"><svg viewBox="0 0 24 24" style="fill:#d97706"><path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg></div>
+            <span class="s-badge" style="background:#fef3c7;color:#92400e">Pending</span>
+          </div>
+          <h2 id="cntPending">—</h2><p>Awaiting Prediction</p>
+        </div>
+        <div class="stat-card">
+          <div class="stat-top">
+            <div class="s-icon" style="background:#d1fae5"><svg viewBox="0 0 24 24" style="fill:#059669"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg></div>
+            <span class="s-badge" style="background:#d1fae5;color:#065f46">Done</span>
+          </div>
+          <h2 id="cntDone">—</h2><p>Reports Sent</p>
+        </div>
+        <div class="stat-card">
+          <div class="stat-top">
+            <div class="s-icon" style="background:#fce7f3"><svg viewBox="0 0 24 24" style="fill:#be185d"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2z"/></svg></div>
+            <span class="s-badge" style="background:#fce7f3;color:#9d174d">Unread</span>
+          </div>
+          <h2>2</h2><p>New Messages</p>
+        </div>
+      </div>
+
+      <!-- PATIENT TABLE -->
+      <div class="tbl-card">
+        <div class="tbl-head">
+          <h3>My Patients</h3>
+          <span class="tbl-hint">🔬 Predict → opens AI analysis &nbsp;·&nbsp; 📋 Send Report → appears after prediction</span>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Patient</th>
+              <th>Age / Gender</th>
+              <th>MRI Status</th>
+              <th>Admitted</th>
+              <th>AI Result</th>
+              <th>Report</th>
+              <th>View AI Report</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="patientBody"></tbody>
+        </table>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /dashboard -->
+
+
+<!-- ══════════ SEND REPORT MODAL ══════════ -->
+<div class="overlay" id="reportOverlay">
+  <div class="modal">
+    <div class="m-head">
+      <h3>📋 Send Report to Patient</h3>
+      <button class="m-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="m-body">
+
+      <!-- Patient summary -->
+      <div class="m-patient" id="mPatient"></div>
+
+      <!-- AI result banner -->
+      <div class="ai-banner" id="aiBanner">
+        <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+        <div>
+          <p id="aiBannerTitle">AI Detected: —</p>
+          <span>Auto-filled from NeuroVision AI prediction</span>
+        </div>
+      </div>
+
+      <!-- Auto-filled tumor type -->
+      <div class="f-group">
+        <label>Tumor Classification (AI Result)</label>
+        <select id="fTumor">
+          <option value="">— Select —</option>
+          <option>No Tumor Detected</option>
+          <option>Glioma</option>
+          <option>Glioma – Grade II</option>
+          <option>Glioma – Grade III</option>
+          <option>Glioma – Grade IV (Glioblastoma)</option>
+          <option>Meningioma – Benign</option>
+          <option>Meningioma – Malignant</option>
+          <option>Meningioma</option>
+          <option>Pituitary Adenoma</option>
+          <option>Pitutary</option>
+          <option>Metastatic Tumor</option>
+        </select>
+      </div>
+
+      <!-- Doctor fills these -->
+      <div class="f-group">
+        <label>Clinical Findings / Diagnosis</label>
+        <textarea id="fDiagnosis" placeholder="Describe MRI findings, tumor location, characteristics, grade…"></textarea>
+      </div>
+
+      <div class="f-row2">
+        <div class="f-group">
+          <label>Confidence / Certainty</label>
+          <select id="fConfidence">
+            <option value="">Select</option>
+            <option>High Confidence</option>
+            <option>Moderate Confidence</option>
+            <option>Low Confidence – Further Tests Needed</option>
+          </select>
+        </div>
+        <div class="f-group">
+          <label>Priority</label>
+          <select id="fPriority">
+            <option value="">Select</option>
+            <option>Urgent</option>
+            <option>High</option>
+            <option>Routine</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="f-group">
+        <label>Recommendation</label>
+        <textarea id="fRec" placeholder="Suggested next steps: surgery, biopsy, medication, follow-up scans…" style="min-height:70px"></textarea>
+      </div>
+
+      <div class="f-group">
+        <label>Message to Patient (plain language)</label>
+        <textarea id="fMsg" placeholder="Write a simple, reassuring message the patient can understand easily…"></textarea>
+      </div>
+
+    </div>
+    <div class="m-foot">
+      <button class="mbtn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="mbtn-send" onclick="sendReport()">
+        <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+        Send Report to Patient
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+  Report sent successfully to patient!
+</div>
+
+<script>
+let PATIENTS = [];
+let LOGGED_DOCTOR = null;
+let _activeIdx = null;
+
+function initials(n) {
+  if (!n) return "?";
+  return n.trim().split(/\s+/).slice(0, 2).map(w => w[0].toUpperCase()).join("");
+}
+
+function gLabel(g) {
+  if (g === "F") return "Female";
+  if (g === "M") return "Male";
+  return g || "-";
+}
+
+function tagForMRI(status) {
+  if (status === "Uploaded" || status === "Completed") {
+    return '<span class="tag t-green">Uploaded</span>';
+  }
+  if (status === "In Progress") {
+    return '<span class="tag t-blue">In Progress</span>';
+  }
+  return '<span class="tag t-yellow">Pending</span>';
+}
+
+async function doLogin() {
+  const id = document.getElementById("loginId").value.trim();
+  const pass = document.getElementById("loginPass").value.trim();
+  const err = document.getElementById("loginErr");
+
+  if (!id || !pass) {
+    err.textContent = "Please enter your Doctor ID and password.";
+    err.style.display = "block";
+    return;
+  }
+
+  const res = await fetch("/api/doctor/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      email: id,
+      password: pass
+    })
+  });
+
+  const data = await res.json();
+
+  if (!data.success) {
+    err.textContent = data.message || "Invalid doctor login.";
+    err.style.display = "block";
+    return;
+  }
+
+  err.style.display = "none";
+  LOGGED_DOCTOR = data.doctor;
+
+  localStorage.setItem("doctor_id", LOGGED_DOCTOR.doctor_id);
+  localStorage.setItem("doctor_name", LOGGED_DOCTOR.doctor_name);
+  localStorage.setItem("doctor_duty_time", LOGGED_DOCTOR.duty_time);
+
+  showDashboard(LOGGED_DOCTOR);
+}
+
+function doLogout() {
+  localStorage.removeItem("doctor_id");
+  localStorage.removeItem("doctor_name");
+  localStorage.removeItem("doctor_duty_time");
+
+  document.getElementById("loginId").value = "";
+  document.getElementById("loginPass").value = "";
+  document.getElementById("loginErr").style.display = "none";
+  document.getElementById("loginScreen").style.display = "flex";
+  document.getElementById("dashboard").style.display = "none";
+}
+
+function showDashboard(doctor) {
+  const name = doctor?.doctor_name || localStorage.getItem("doctor_name") || "Doctor";
+
+  document.getElementById("loginScreen").style.display = "none";
+  document.getElementById("dashboard").style.display = "block";
+
+  document.getElementById("sbName").textContent = name;
+  document.getElementById("chipName").textContent = name;
+  document.getElementById("sbAv").textContent = initials(name);
+  const dutyTime =
+  doctor?.duty_time ||
+  localStorage.getItem("doctor_duty_time") ||
+  "Not Available";
+
+document.getElementById("doctorDutyTime").textContent =
+  `On Duty · ${dutyTime}`;
+
+  loadDoctorPatients();
+}
+
+async function loadDoctorPatients() {
+  const doctorId = localStorage.getItem("doctor_id");
+
+  if (!doctorId) return;
+
+  const res = await fetch(`/api/doctor/patients/${doctorId}`);
+  PATIENTS = await res.json();
+
+  renderTable();
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  const doctorId = localStorage.getItem("doctor_id");
+  const doctorName = localStorage.getItem("doctor_name");
+
+  if (doctorId) {
+    showDashboard({ doctor_id: doctorId, doctor_name: doctorName });
+  }
+});
+
+function renderTable() {
+  const tbody = document.getElementById("patientBody");
+  tbody.innerHTML = "";
+
+  let pending = 0;
+  let done = 0;
+
+  PATIENTS.forEach((p, idx) => {
+    const predictionDone = p.prediction_status === "Completed";
+    const reportSent = p.report_sent === "Yes";
+    const mriReady = p.mri_status === "Uploaded" || p.mri_status === "Completed";
+
+    if (mriReady && !predictionDone) pending++;
+    if (reportSent) done++;
+
+    const aiCol = predictionDone
+      ? `<span class="tag t-blue">${p.tumor_type || "Completed"}</span>`
+      : `<span style="color:var(--text-soft);font-size:.8rem">—</span>`;
+
+    const repCol = reportSent
+      ? `<span class="tag t-green">Sent ✓</span>`
+      : predictionDone
+        ? `<span class="tag t-yellow">Pending</span>`
+        : `<span style="color:var(--text-soft);font-size:.8rem">—</span>`;
+
+    const action = reportSent
+      ? `<span class="lbl-done">✓ Report Sent</span>`
+      : predictionDone
+        ? `<button class="btn-send" onclick="openReport(${idx})">📋 Send Report</button>`
+        : mriReady
+          ? `<button class="btn-predict" onclick="goPredict(${idx})">🔬 Predict</button>`
+          : `<span class="lbl-wait">Awaiting MRI</span>`;
+
+    tbody.innerHTML += `
+      <tr id="row-${idx}">
+        <td>
+          <div class="p-cell">
+            <div class="p-av">${initials(p.patient_name)}</div>
+            <div>
+              <div style="font-weight:600;color:var(--text-dark)">${p.patient_name}</div>
+              <div style="font-size:.72rem;color:var(--text-soft)">${p.patient_code}</div>
+            </div>
+          </div>
+        </td>
+        <td>${p.age || "-"} / ${gLabel(p.gender)}</td>
+        <td>${tagForMRI(p.mri_status)}</td>
+        <td>${p.admission_date || "-"}</td>
+        <td>${aiCol}</td>
+        <td>${repCol}</td>
+        <td>${predictionDone
+          ? `<a class="btn-view" href="/predict?patient_id=${p.patient_id}&report_id=${p.report_id}" target="_blank">
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+            View Report
+            </a>`
+          : `<span style="color:var(--text-soft);font-size:.8rem">—</span>`
+        }</td>
+        <td>${action}</td>
+      </tr>`;
+  });
+
+  document.getElementById("cntAssigned").textContent = PATIENTS.length;
+  document.getElementById("cntPending").textContent = pending;
+  document.getElementById("cntDone").textContent = done;
+}
+
+function goPredict(idx) {
+  const p = PATIENTS[idx];
+
+  localStorage.setItem("predictPatient", JSON.stringify({
+    id: p.patient_code,
+    name: p.patient_name,
+    age: p.age,
+    gender: gLabel(p.gender),
+    admit: p.admission_date,
+    contact: p.phone_no
+  }));
+
+  window.location.href = `/predict?patient_id=${p.patient_id}&report_id=${p.report_id}`;
+}
+
+function openReport(idx) {
+  _activeIdx = idx;
+  const p = PATIENTS[idx];
+
+  document.getElementById("mPatient").innerHTML = `
+    <div><span>Name</span><strong>${p.patient_name}</strong></div>
+    <div><span>ID</span><strong>${p.patient_code}</strong></div>
+    <div><span>Age</span><strong>${p.age || "-"}</strong></div>
+    <div><span>Admitted</span><strong>${p.admission_date || "-"}</strong></div>
+    <div><span>Contact</span><strong>${p.phone_no || "-"}</strong></div>`;
+
+  document.getElementById("aiBannerTitle").textContent =
+    "AI Detected: " + (p.tumor_type || "Completed");
+
+  document.getElementById("fDiagnosis").value = p.clinical_report || "";
+  document.getElementById("fTumor").value = p.tumor_type || "";
+  document.getElementById("fRec").value = "";
+  document.getElementById("fMsg").value = p.doctor_message || "";
+
+  document.getElementById("reportOverlay").classList.add("open");
+}
+
+function closeModal() {
+  document.getElementById("reportOverlay").classList.remove("open");
+}
+
+async function sendReport() {
+  const p = PATIENTS[_activeIdx];
+
+  const clinicalReport = document.getElementById("fDiagnosis").value.trim();
+  const tumorType = document.getElementById("fTumor").value;
+  const recommendation = document.getElementById("fRec").value.trim();
+  const doctorMessage = document.getElementById("fMsg").value.trim();
+
+  if (!clinicalReport) {
+    alert("Please add clinical findings / diagnosis notes.");
+    return;
+  }
+
+  const res = await fetch("/api/doctor/send-report", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      report_id: p.report_id,
+      tumor_type: tumorType,
+      clinical_report: clinicalReport + "\n\nRecommendation: " + recommendation,
+      doctor_message: doctorMessage
+    })
+  });
+
+  const data = await res.json();
+
+  if (!data.success) {
+    alert(data.message || "Report sending failed.");
+    return;
+  }
+
+  closeModal();
+  await loadDoctorPatients();
+
+  const toast = document.getElementById("toast");
+  toast.classList.add("show");
+  setTimeout(() => toast.classList.remove("show"), 3500);
+}
+</script>
+
+</body>
+</html>
+
+
+
+
+
+
+
